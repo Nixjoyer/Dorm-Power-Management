@@ -23,44 +23,68 @@ def price(total_energy):
     print(f"Total Cost = {total_cost} KES")
 
 
-# Storage
-def store(name, appliance, total_energy, total_cost):
-    new_user = {
-        "name": [
-            {"appliance": appliance},
-            {"power": power},
-            {"energy": total_energy},
-            {"cost": total_cost},
-        ]
-    }
+# Global list to store all users
+info = []
 
-    info = []
+# Storage
+def store(name, appliance, power, total_energy, total_cost):
+    global info
+    new_user = {
+        "name": name,
+        "appliance": appliance,
+        "power": power,
+        "energy": total_energy,
+        "cost": total_cost
+    }
     info.append(new_user)
 
 
 # Terminal table
-def table(name, appliance, total_energy, total_cost):
-    store(name, appliance, total_energy, total_cost)
-    header = f"| {'Name':<10} | {'Appliance':<10} | {'Total Power':<7} | {'Total Cost':<12} |"
-    print(header)
+def table():
+    global info
+    if not info:
+        print("\nError: No user data found!")
+        print("Please add at least 1 user via option 1 before viewing results.\n")
+        return
+    
+    # Sort users by cost (highest to lowest)
+    sorted_info = sorted(info, key=lambda x: x['cost'], reverse=True)
+    
+    header = f"| {'Rank':<6} | {'Name':<15} | {'Appliance':<15} | {'Energy (kWh)':<12} | {'Cost (KES)':<12} |"
+    print("\n" + header)
     ln_break = len(header)
     print("-" * ln_break)
+    
+    # Display all users with ranking
+    for rank, user in enumerate(sorted_info, start=1):
+        row = f"| {rank:<6} | {user['name']:<15} | {user['appliance']:<15} | {user['energy']:<12.2f} | {user['cost']:<12.2f} |"
+        print(row)
+    
+    print("-" * ln_break + "\n")
 
 
 # Terminal CLI
-task = input(
-    "Power Usage and Cost Calculator \n\n What would you like to do? \n 1. Calculate total energy and cost \n 2. Show all results \n 3. Quit"
-)
+while True:
+    task = input(
+        "Power Usage and Cost Calculator \n\n What would you like to do? \n 1. Calculate total energy and cost \n 2. Show all results \n 3. Quit \n\n"
+    )
 
-if task == "1":
-    ans = energy(power, hours, day)
-    print(ans)
+    if task == "1":
+        data()  # Call data() first to initialize power, hours, day
+        energy(power, hours, day)
+        price(total_energy)
+        store(name, appliance, power, total_energy, total_cost)
+        print("\n")  # Add spacing after calculation
 
-elif task == "2":
-    table(name, appliance, total_energy, total_cost)
+    elif task == "2":
+        if info:  # Only break if there's data to show
+            table()
+            break  # Exit loop after showing results
+        else:
+            table()  # This will show the error message and continue
 
-elif task == "3":
-    exit("Thanks for using this program!")
+    elif task == "3":
+        exit("Thanks for using this program!")
 
-else:
-    print("INvalid choice")
+    else:
+        print("Invalid option.\n")
